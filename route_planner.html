@@ -296,6 +296,14 @@ const TOWN_COORDS = {
   '仁武區':{lat:22.6939,lng:120.3514},'岡山區':{lat:22.7969,lng:120.2972},
   '橋頭區':{lat:22.7519,lng:120.3019},'旗山區':{lat:22.8914,lng:120.4808},
   '美濃區':{lat:22.8983,lng:120.5397},'高雄市':{lat:22.6273,lng:120.3014},
+  '台北市':{lat:25.0330,lng:121.5654},'新北市':{lat:25.0169,lng:121.4628},
+  '桃園市':{lat:24.9937,lng:121.3010},'新竹市':{lat:24.8066,lng:120.9686},
+  '新竹縣':{lat:24.8387,lng:121.0177},'苗栗縣':{lat:24.5602,lng:120.8214},
+  '台中市':{lat:24.1477,lng:120.6736},'彰化縣':{lat:24.0667,lng:120.5167},
+  '南投縣':{lat:23.9609,lng:120.9719},'雲林縣':{lat:23.7092,lng:120.4313},
+  '嘉義市':{lat:23.4801,lng:120.4491},'嘉義縣':{lat:23.4518,lng:120.2550},
+  '台南市':{lat:22.9999,lng:120.2270},'宜蘭縣':{lat:24.7021,lng:121.7378},
+  '花蓮縣':{lat:23.9872,lng:121.6015},'台東縣':{lat:22.7972,lng:121.1713},
 };
 
 let stops = [];
@@ -429,8 +437,19 @@ function addManual() {
   const name = document.getElementById('addName').value.trim();
   const addr = document.getElementById('addAddr').value.trim();
   if (!addr) { alert('請輸入地址'); return; }
-  const coord = STORE_COORDS[addr] || guessCoord(addr);
-  stops.push({ name: name || addr, address: addr, lat: coord.lat, lng: coord.lng, manual: true });
+
+  const direct = parseLatLng(addr);
+  const fixed = STORE_COORDS[addr] || null;
+  const coord = direct || fixed;
+
+  stops.push({
+    name: name || addr,
+    address: addr,
+    lat: coord ? coord.lat : null,
+    lng: coord ? coord.lng : null,
+    manual: true
+  });
+
   document.getElementById('addName').value = '';
   document.getElementById('addAddr').value = '';
   renderList();
@@ -444,7 +463,21 @@ function guessCoord(address) {
   for (const [town, coord] of Object.entries(TOWN_COORDS)) {
     if (address.includes(town)) return { ...coord };
   }
-  return { lat: 23.5 + (Math.random()-0.5)*2, lng: 120.9 + (Math.random()-0.5)*2 };
+  return null;
+}
+
+function previewCoord(address) {
+  return guessCoord(address) || { lat: 23.6978, lng: 120.9605 }; // 台灣中心點
+}
+
+function parseLatLng(text) {
+  const m = String(text || '').trim().match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+  if (!m) return null;
+  const lat = parseFloat(m[1]);
+  const lng = parseFloat(m[2]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { lat, lng };
 }
 
 function getCoord(s) {
@@ -458,17 +491,28 @@ async function geocodeAddress(address) {
   if (!address) return null;
   // 先查內建座標
   if (STORE_COORDS[address]) return STORE_COORDS[address];
+
   // 座標格式
-  const cm = address.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
-  if (cm) return { lat: parseFloat(cm[1]), lng: parseFloat(cm[2]) };
-  // 用 Nominatim 查詢
-  try {
-    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(address);
-    const r = await fetch(url, { headers: { 'User-Agent': 'RouteApp/1.0', 'Accept-Language': 'zh-TW' } });
-    const d = await r.json();
-    if (d && d[0]) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
-  } catch(e) {}
-  // 最後備用鄉鎮估算
+  const direct = parseLatLng(address);
+  if (direct) return direct;
+
+  // 用 Nominatim 查詢（多組 query 以提升台灣地址命中率）
+  const queries = Array.from(new Set([
+    address.trim(),
+    address.replace(/[（）()]/g, ' ').replace(/\s+/g, ' ').trim(),
+    `台灣 ${address.trim()}`
+  ].filter(Boolean)));
+
+  for (const q of queries) {
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(q);
+      const r = await fetch(url, { headers: { 'User-Agent': 'RouteApp/1.0', 'Accept-Language': 'zh-TW' } });
+      const d = await r.json();
+      if (d && d[0]) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
+    } catch(e) {}
+  }
+
+  // 最後備用：鄉鎮市中心估算（固定，不再使用隨機）
   return guessCoord(address);
 }
 
@@ -486,9 +530,9 @@ function renderList() {
     <button class="del-btn" onclick="deleteStop(${i})">✕</button>
   </li>`).join('');
 
-  // 先用已知座標畫圖，未知的用鄉鎮估算
+  // 先用已知座標畫圖，未知的用鄉鎮估算預覽
   const pts = stops.map((s,i) => {
-    const c = getCoord(s) || guessCoord(s.address);
+    const c = getCoord(s) || previewCoord(s.address);
     return { ...c, name: s.name, address: s.address, manual: s.manual };
   });
   setTimeout(() => updateMap(pts), 100);
@@ -563,17 +607,22 @@ function setProgress(pct, text) {
 
 async function calcRoute() {
   if (!stops.length) { alert('請先匯入站點'); return; }
+
+  const finishCalc = () => {
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('calcBtn').disabled = false;
+  };
+
   document.getElementById('calcBtn').disabled = true;
   document.getElementById('progressWrap').style.display = 'block';
   setProgress(0, '準備中...');
 
   let startPt = null;
   const startVal = document.getElementById('startInput').value.trim();
-  const cm = startVal.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
-  if (cm) startPt = { lat: parseFloat(cm[1]), lng: parseFloat(cm[2]) };
+  startPt = parseLatLng(startVal);
   if (!startPt && startCoord) startPt = { ...startCoord };
-  if (!startPt && startVal) { startPt = await geocodeAddress(startVal); }
-  if (!startPt) startPt = { lat: 22.6797, lng: 120.4906 };
+  if (!startPt && startVal) startPt = await geocodeAddress(startVal);
+  if (!startPt) startPt = { lat: 22.6797, lng: 120.4906 }; // 預設屏東市
   startPt.name = startVal || '出發點';
   startPt.address = startVal || '';
   startPt.type = 'start';
@@ -581,6 +630,7 @@ async function calcRoute() {
   setProgress(20, '解析站點座標...');
 
   const resolved = [];
+  const unresolved = [];
   for (let i = 0; i < stops.length; i++) {
     const s = stops[i];
     setProgress(20 + Math.round((i / stops.length) * 60), `解析 ${i+1}/${stops.length}：${s.name}`);
@@ -589,7 +639,23 @@ async function calcRoute() {
       coord = await geocodeAddress(s.address);
       await sleep(300); // 避免被封
     }
+    if (!coord) {
+      unresolved.push(s.name || s.address || `第${i+1}站`);
+      continue;
+    }
     resolved.push({ ...s, ...coord, type: 'stop' });
+  }
+
+  if (!resolved.length) {
+    finishCalc();
+    alert('沒有可用站點座標，請檢查地址格式（建議含縣市）。');
+    return;
+  }
+
+  if (unresolved.length) {
+    finishCalc();
+    alert('以下站點無法定位，請修正後再計算：\n' + unresolved.slice(0, 8).join('\n'));
+    return;
   }
 
   setProgress(85, '計算最佳順序...');
@@ -602,7 +668,12 @@ async function calcRoute() {
   const endVal = document.getElementById('endInput').value.trim();
   if (endVal) {
     setProgress(92, '解析終點...');
-    const ec = await geocodeAddress(endVal) || guessCoord(endVal);
+    const ec = await geocodeAddress(endVal);
+    if (!ec) {
+      finishCalc();
+      alert('終點地址無法定位，請補上完整縣市地址。');
+      return;
+    }
     route.push({ ...ec, name: endVal, address: endVal, type: 'end' });
   } else {
     route.push({ ...startPt, name: '返回出發點', type: 'end' });
@@ -610,8 +681,7 @@ async function calcRoute() {
 
   setProgress(100, '完成！');
   await sleep(200);
-  document.getElementById('progressWrap').style.display = 'none';
-  document.getElementById('calcBtn').disabled = false;
+  finishCalc();
   startNavigation();
 }
 
@@ -682,7 +752,7 @@ function exitNav() {
   document.getElementById('setupScreen').style.display = 'block';
   window.scrollTo(0,0);
   const pts = stops.map(s => {
-    const c = getCoord(s) || guessCoord(s.address);
+    const c = getCoord(s) || previewCoord(s.address);
     return { ...c, name: s.name, address: s.address, manual: s.manual };
   });
   setTimeout(() => { if(leafletMap) updateMap(pts); }, 100);
