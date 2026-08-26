@@ -22,6 +22,8 @@ label{font-size:13px;color:#555;display:block;margin-bottom:4px;margin-top:10px}
 label:first-of-type{margin-top:0}
 input[type=text]{width:100%;font-size:15px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;outline:none;background:#fafafa;color:#1a1a1a}
 input[type=text]:focus{border-color:#2563eb;background:#fff}
+textarea{width:100%;font-size:14px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;outline:none;background:#fafafa;color:#1a1a1a;min-height:88px;resize:vertical;font-family:inherit;line-height:1.5}
+textarea:focus{border-color:#2563eb;background:#fff}
 .btn{width:100%;padding:13px;font-size:15px;font-weight:700;border-radius:12px;border:none;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
 .btn-primary{background:#2563eb;color:#fff}
 .btn-primary:active{background:#1d4ed8}
@@ -43,6 +45,7 @@ input[type=text]:focus{border-color:#2563eb;background:#fff}
 .sinfo{flex:1;min-width:0}
 .sname{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .saddr{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snote{font-size:11px;color:#f59e0b;margin-top:4px;padding:3px 6px;background:#fffbeb;border-radius:4px;display:inline-block}
 .del-btn{background:none;border:none;font-size:16px;color:#ddd;cursor:pointer;padding:4px}
 .del-btn:active{color:#ef4444}
 .gps-row{display:flex;gap:8px;align-items:center}
@@ -74,16 +77,20 @@ input[type=text]:focus{border-color:#2563eb;background:#fff}
 .nav-next-label{font-size:11px;font-weight:700;color:#888;margin-bottom:4px}
 .nav-next-name{font-size:15px;font-weight:600;color:#555}
 .nav-next-addr{font-size:12px;color:#888}
-.btn-nav-go{background:#16a34a;color:#fff;font-size:16px;padding:15px;border-radius:14px;border:none;width:100%;cursor:pointer;font-weight:700;margin-bottom:8px}
-.btn-nav-go:active{background:#15803d}
-.btn-nav-done{background:#2563eb;color:#fff;font-size:15px;padding:13px;border-radius:14px;border:none;width:100%;cursor:pointer;font-weight:700;margin-bottom:8px}
-.btn-nav-done:active{background:#1d4ed8}
-.btn-nav-skip{background:#f0f0ee;color:#888;font-size:14px;padding:11px;border-radius:12px;border:none;width:100%;cursor:pointer;margin-bottom:8px}
-.route-preview{list-style:none}
-.rp-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #f0f0f0;font-size:13px}
+.nav-go-row{display:flex;gap:8px;margin-bottom:10px}
+.btn-nav-go{background:#22c55e;color:#fff;font-size:18px;padding:20px 14px;border-radius:16px;border:none;flex:1;cursor:pointer;font-weight:800;box-shadow:0 4px 12px rgba(34,197,94,0.4)}
+.btn-nav-go:active{background:#16a34a;transform:scale(0.98)}
+.btn-nav-share{background:#f97316;color:#fff;font-size:22px;padding:20px 18px;border-radius:16px;border:none;cursor:pointer;font-weight:800;box-shadow:0 4px 12px rgba(249,115,22,0.35);flex-shrink:0}
+.btn-nav-share:active{background:#ea6c10;transform:scale(0.98)}
+.btn-nav-done{background:#3b82f6;color:#fff;font-size:20px;padding:20px 18px;border-radius:16px;border:none;width:100%;cursor:pointer;font-weight:800;margin-bottom:10px;box-shadow:0 4px 12px rgba(59,130,246,0.4)}
+.btn-nav-done:active{background:#2563eb;transform:scale(0.98)}
+.btn-nav-skip{background:#e5e7eb;color:#374151;font-size:16px;padding:14px;border-radius:14px;border:none;width:100%;cursor:pointer;margin-bottom:10px;font-weight:600}
+.route-preview{list-style:none;max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.rp-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #f0f0f0;font-size:13px;cursor:pointer}
 .rp-item:last-child{border-bottom:none}
 .rp-item.done{opacity:0.35;text-decoration:line-through}
 .rp-item.current{font-weight:700;color:#2563eb}
+.rp-item.skipped{opacity:0.5;color:#f59e0b;text-decoration:line-through}
 .rp-num{width:22px;height:22px;border-radius:50%;background:#e0e7ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
 .rp-num.done-num{background:#f0f0f0;color:#aaa}
 .rp-num.cur-num{background:#2563eb;color:#fff}
@@ -116,6 +123,12 @@ input[type=text]:focus{border-color:#2563eb;background:#fff}
     </div>
 
     <div class="card">
+      <div class="sec-title">貼上 TG 門市清單 <span style="color:#2563eb;font-size:14px">●</span></div>
+      <textarea id="pasteArea" placeholder="直接貼上 TG 收到的門市清單，一行一家（含縣市地址即可，名稱／備註可省略）&#10;例：&#10;恆春店 屏東縣恆春鎮西門路110號（交報表）&#10;潮州店 屏東縣潮州鎮延平路156號"></textarea>
+      <button class="btn btn-primary" onclick="parsePaste()" style="margin-top:8px"><span>📝</span><span>解析並加入站點</span></button>
+    </div>
+
+    <div class="card">
       <div class="sec-title">匯入 Excel 站點</div>
       <div class="upload-area" onclick="document.getElementById('fileInput').click()">
         <div class="upload-icon">📋</div>
@@ -132,6 +145,8 @@ input[type=text]:focus{border-color:#2563eb;background:#fff}
         <input type="text" id="addAddr" placeholder="地址（必填）" style="flex:1">
         <button style="padding:9px 14px;font-size:14px;font-weight:700;border-radius:10px;border:none;background:#f59e0b;color:#fff;cursor:pointer;white-space:nowrap" onclick="addManual()">＋ 新增</button>
       </div>
+      <!-- 新增：备注字段 -->
+      <input type="text" id="addNote" placeholder="備註（停留幾分鐘、要交什麼東西）" style="margin-top:8px;width:100%;font-size:14px;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px">
     </div>
 
     <div class="card">
@@ -139,7 +154,8 @@ input[type=text]:focus{border-color:#2563eb;background:#fff}
       <ul class="stop-list" id="stopList">
         <li class="empty-hint">尚未匯入站點</li>
       </ul>
-      <button class="btn btn-gray" onclick="clearAll()" style="margin-bottom:12px">清除所有站點</button>
+      <button class="btn btn-gray" onclick="clearAll()" style="margin-bottom:8px">清除所有站點</button>
+      <button class="btn btn-gray" onclick="makeShareLink()" style="margin-bottom:12px">🔗 產生一鍵路線連結（複製）</button>
       <!-- 互動地圖放最下面 -->
       <div class="sec-title" style="margin-top:4px">路線地圖</div>
       <div id="mapContainer"><div id="map"></div></div>
@@ -182,11 +198,15 @@ input[type=text]:focus{border-color:#2563eb;background:#fff}
       <div class="nav-name" id="navCurName"></div>
       <div class="nav-addr" id="navCurAddr"></div>
       <div class="nav-dist" id="navCurDist"></div>
+      <div id="navCurNote" style="margin-top:8px;padding:8px 12px;background:#fff3cd;border-radius:8px;font-size:14px;color:#856404;display:none"></div>
     </div>
 
-    <button class="btn-nav-go" onclick="goNavigate()">🗺 開啟 Google Maps 導航</button>
+    <div class="nav-go-row">
+      <button class="btn-nav-go" onclick="goNavigate()">🗺 Google Maps 導航</button>
+      <button class="btn-nav-share" onclick="shareStop()" title="分享地址">📤</button>
+    </div>
     <button class="btn-nav-done" onclick="nextStop()">✅ 已到達，前往下一站</button>
-    <button class="btn-nav-skip" onclick="skipStop()">跳過此站</button>
+    <button onclick="openFullRoute()" style="width:100%;padding:13px;font-size:15px;font-weight:700;border-radius:14px;border:1.5px solid #2563eb;background:#fff;color:#2563eb;cursor:pointer;margin-bottom:12px">🗺 一次開啟整條路線（Google Maps）</button>
 
     <div class="card">
       <div class="sec-title">下一站</div>
@@ -195,7 +215,10 @@ input[type=text]:focus{border-color:#2563eb;background:#fff}
     </div>
 
     <div class="card">
-      <div class="sec-title">全部路線</div>
+      <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">
+        全部路線
+        <button id="deleteModeBtn" onclick="toggleDeleteMode()" style="font-size:12px;padding:4px 10px;border-radius:8px;border:1.5px solid #ef4444;background:#fff;color:#ef4444;cursor:pointer;font-weight:600">✕ 刪除站點</button>
+      </div>
       <ul class="route-preview" id="routePreview"></ul>
     </div>
   </div>
@@ -275,6 +298,359 @@ const STORE_COORDS = {
   "高雄市苓雅區凱旋一路158號": {lat:22.6214, lng:120.3175},
   "高雄市鹽埕區七賢三路243號": {lat:22.6256, lng:120.2878},
   "高雄市鹽埕區七賢三路6號": {lat:22.6275, lng:120.2856},
+  // 高雄摩斯（Excel 新增）
+  "高雄市新興區中山一路293號":   {lat:22.6319, lng:120.3025},
+  "高雄市前金區五福三路52號":    {lat:22.6281, lng:120.3011},
+  "高雄市左營區自由二路351號":   {lat:22.6697, lng:120.2978},
+  "高雄市三民區澄清路458號":     {lat:22.6475, lng:120.3242},
+  "高雄市鳳山區青年路二段317號": {lat:22.6214, lng:120.3581},
+  "高雄市三民區大順二路853號":   {lat:22.6597, lng:120.3172},
+  "高雄市苓雅區廣州一街143-7號": {lat:22.6236, lng:120.3236},
+  "高雄市苓雅區中山二路412號":   {lat:22.6181, lng:120.3175},
+  "高雄市鳳山區五甲一路48、50號":{lat:22.5897, lng:120.3633},
+  "高雄市小港區漢民路541號":     {lat:22.5664, lng:120.3456},
+  "高雄市鼓山區美術東二路47號":  {lat:22.6575, lng:120.2867},
+  "高雄市鳳山區五甲二路365號":   {lat:22.5883, lng:120.3675},
+  // 台南市 - 中西區
+  "台南市中西區康樂街233號":       {lat:22.9978,lng:120.2011},
+  "台南市中西區民權路四段350號":   {lat:22.9956,lng:120.1981},
+  "台南市中西區西和路106號":       {lat:22.9969,lng:120.2039},
+  "台南市中西區金華路三段69號":    {lat:22.9922,lng:120.2033},
+  // 台南市 - 東區
+  "台南市東區中華東路二段237號":   {lat:22.9997,lng:120.2317},
+  "台南市東區仁和路77-38號":       {lat:23.0033,lng:120.2233},
+  "台南市東區小東路246號":         {lat:22.9992,lng:120.2194},
+  "台南市東區崇善路23號":          {lat:22.9994,lng:120.2275},
+  "台南市東區崇善路666號":         {lat:23.0042,lng:120.2383},
+  "台南市東區崇德路154號":         {lat:23.0017,lng:120.2261},
+  "台南市東區崇明路385號":         {lat:22.9986,lng:120.2303},
+  "台南市東區崇道路22號":          {lat:23.0019,lng:120.2272},
+  "台南市東區東安路20號":          {lat:23.0006,lng:120.2244},
+  "台南市東區東平路190號":         {lat:22.9997,lng:120.2261},
+  "台南市東區生產路181號":         {lat:22.9981,lng:120.2200},
+  "台南市東區自由路三段376號":     {lat:22.9983,lng:120.2233},
+  "台南市東區裕忠路107號":         {lat:22.9989,lng:120.2317},
+  "台南市東區裕農路400號":         {lat:22.9944,lng:120.2278},
+  "台南市東區長榮路二段180號":     {lat:22.9986,lng:120.2183},
+  // 台南市 - 北區
+  "台南市北區公園路798號":         {lat:23.0047,lng:120.2033},
+  "台南市北區和緯路二段172號":     {lat:23.0031,lng:120.2094},
+  "台南市北區和緯路五段30號":      {lat:23.0142,lng:120.2125},
+  "台南市北區忠義路三段85號":      {lat:23.0133,lng:120.2050},
+  "台南市北區文賢一路77號":        {lat:23.0086,lng:120.1994},
+  "台南市北區海安路三段747號":     {lat:23.0119,lng:120.1919},
+  "台南市北區西門路四段111號":     {lat:23.0083,lng:120.2044},
+  "台南市北區開元路153號":         {lat:23.0058,lng:120.2050},
+  // 台南市 - 南區
+  "台南市南區中華西路一段306號":   {lat:22.9800,lng:120.1950},
+  "台南市南區健康路一段435號":     {lat:22.9764,lng:120.2119},
+  "台南市南區夏林路71號":          {lat:22.9769,lng:120.2108},
+  "台南市南區新和東路155號":       {lat:22.9750,lng:120.2175},
+  "台南市南區明興路55號":          {lat:22.9781,lng:120.2092},
+  "台南市南區永成路三段523號":     {lat:22.9719,lng:120.2139},
+  "台南市南區興南街200號":         {lat:22.9744,lng:120.2028},
+  "台南市南區興昌路38巷1號":       {lat:22.9722,lng:120.2081},
+  "台南市南區萬年五街270號":       {lat:22.9756,lng:120.1961},
+  "台南市南區金華路一段365號":     {lat:22.9817,lng:120.2047},
+  "台南市南區金華路二段85號":      {lat:22.9853,lng:120.2019},
+  // 台南市 - 安南區
+  "台南市安南區公學路四段29號":    {lat:23.0386,lng:120.1875},
+  "台南市安南區北安路三段92號":    {lat:23.0386,lng:120.2022},
+  "台南市安南區安中路一段872號":   {lat:23.0225,lng:120.1917},
+  "台南市安南區安中路六段702號":   {lat:23.0542,lng:120.1733},
+  "台南市安南區安和路一段463號":   {lat:23.0310,lng:120.2131},
+  "台南市安南區安和路五段316號":   {lat:23.0641,lng:120.2186},
+  "台南市安南區安和路四段259號":   {lat:23.0527,lng:120.2175},
+  "台南市安南區安富街346號":       {lat:23.0250,lng:120.1769},
+  "台南市安南區宜居路239號":       {lat:23.0319,lng:120.1906},
+  "台南市安南區海佃路四段32號":    {lat:23.0575,lng:120.1578},
+  "台南市安南區育安街116號":       {lat:23.0444,lng:120.1936},
+  // 台南市 - 安平區
+  "台南市安平區健康路三段357號":   {lat:22.9911,lng:120.1689},
+  "台南市安平區國平路210號":       {lat:22.9972,lng:120.1722},
+  "台南市安平區永華路二段373號":   {lat:22.9947,lng:120.1869},
+  "台南市安平區華平路271號":       {lat:22.9894,lng:120.1842},
+  "台南市安平區華平路619號":       {lat:22.9869,lng:120.1756},
+  // 台南市 - 永康區
+  "台南市永康區中山南路282-5號":   {lat:23.0272,lng:120.2439},
+  "台南市永康區中山南路451號":     {lat:23.0253,lng:120.2408},
+  "台南市永康區中山路366號":       {lat:23.0344,lng:120.2553},
+  "台南市永康區中正北路125號":     {lat:23.0394,lng:120.2489},
+  "台南市永康區中華路249號":       {lat:23.0303,lng:120.2508},
+  "台南市永康區中華路575號":       {lat:23.0281,lng:120.2561},
+  "台南市永康區中華路735號":       {lat:23.0267,lng:120.2594},
+  "台南市永康區大橋二街218號":     {lat:23.0236,lng:120.2631},
+  "台南市永康區富強路一段108號":   {lat:23.0319,lng:120.2631},
+  "台南市永康區崑山街1號":         {lat:23.0172,lng:120.2647},
+  "台南市永康區復國一路5號":       {lat:23.0367,lng:120.2556},
+  "台南市永康區正強街172號":       {lat:23.0311,lng:120.2569},
+  "台南市永康區永大一路208號":     {lat:23.0297,lng:120.2694},
+  "台南市永康區永大路三段35號":    {lat:23.0208,lng:120.2719},
+  "台南市永康區永大路二段1446號":  {lat:23.0103,lng:120.2642},
+  "台南市永康區永大路二段936號":   {lat:23.0167,lng:120.2667},
+  "台南市永康區永華路176號":       {lat:23.0253,lng:120.2703},
+  // 台南市 - 歸仁區
+  "台南市歸仁區中山路三段2號":     {lat:22.9631,lng:120.2939},
+  "台南市歸仁區復興路87號":        {lat:22.9675,lng:120.3019},
+  "台南市歸仁區忠孝北路158號":     {lat:22.9692,lng:120.2994},
+  "台南市歸仁區文化街三段107號":   {lat:22.9661,lng:120.3008},
+  // 台南市 - 仁德區
+  "台南市仁德區中清路167號":       {lat:22.9556,lng:120.2672},
+  "台南市仁德區民安路一段402號":   {lat:22.9517,lng:120.2544},
+  "台南市仁德區德安路156號":       {lat:22.9493,lng:120.2549},
+  // 台南市 - 下營區
+  "台南市下營區中山路一段250號":   {lat:23.2528,lng:120.3156},
+  // 台南市 - 六甲區
+  "台南市六甲區中山路93號":        {lat:23.2286,lng:120.3539},
+  // 台南市 - 佳里區
+  "台南市佳里區中山路452號":       {lat:23.1686,lng:120.1786},
+  "台南市佳里區仁愛路388號":       {lat:23.1697,lng:120.1817},
+  "台南市佳里區安西路205號":       {lat:23.1675,lng:120.1769},
+  "台南市佳里區建南街112號":       {lat:23.1722,lng:120.1758},
+  // 台南市 - 善化區
+  "台南市善化區中山路78號":        {lat:23.1425,lng:120.3014},
+  "台南市善化區中正路419號":       {lat:23.1417,lng:120.3039},
+  "台南市善化區忠孝路66號":        {lat:23.1431,lng:120.3028},
+  "台南市善化區目加溜灣大道427號": {lat:23.1389,lng:120.3119},
+  // 台南市 - 麻豆區
+  "台南市麻豆區中山路82號":        {lat:23.1808,lng:120.2531},
+  "台南市麻豆區中正路348號":       {lat:23.1822,lng:120.2572},
+  "台南市麻豆區博愛路3-1號":       {lat:23.1794,lng:120.2558},
+  "台南市麻豆區興中路248-21號":    {lat:23.1817,lng:120.2589},
+  // 台南市 - 學甲區
+  "台南市學甲區華宗路501號":       {lat:23.2239,lng:120.1981},
+  // 台南市 - 新化區
+  "台南市新化區中正路540-1號":     {lat:23.0369,lng:120.3178},
+  "台南市新化區忠孝路198-7號":     {lat:23.0353,lng:120.3147},
+  // 台南市 - 新市區
+  "台南市新市區中正路63號":        {lat:23.0711,lng:120.2961},
+  "台南市新市區復興路213號":       {lat:23.0717,lng:120.2978},
+  // 台南市 - 新營區
+  "台南市新營區三民路18號":        {lat:23.3083,lng:120.3136},
+  "台南市新營區復興路150-3號":     {lat:23.3092,lng:120.3153},
+  "台南市新營區東興路123號":       {lat:23.3119,lng:120.3200},
+  "台南市新營區民治路5-1號":       {lat:23.3064,lng:120.3139},
+  "台南市新營區民生路172號":       {lat:23.3072,lng:120.3158},
+  "台南市新營區隋唐街197號":       {lat:23.3056,lng:120.3189},
+  // 台南市 - 玉井區
+  "台南市玉井區中華路283號":       {lat:23.1281,lng:120.4353},
+  // 台南市 - 白河區
+  "台南市白河區國泰路127號":       {lat:23.3528,lng:120.4103},
+  "台南市白河區富民路142號":       {lat:23.3561,lng:120.4089},
+  // 台南市 - 關廟區
+  "台南市關廟區南雄路一段1001號":  {lat:22.9886,lng:120.3294},
+  "台南市關廟區南雄路二段417號":   {lat:22.9869,lng:120.3339},
+  // 台南市 - 鹽水區
+  "台南市鹽水區後厝70號":          {lat:23.3156,lng:120.2661},
+  // 台南市 - 西港區
+  "台南市西港區新興街8-78號":      {lat:23.1122,lng:120.2011},
+  // 台南市 - 官田區
+  "台南市官田區中山路一段135號":   {lat:23.2022,lng:120.3139},
+  // 台南市 - 安定區
+  "台南市安定區安定262-22號":      {lat:23.0800,lng:120.2367},
+  // 台南市 - 柳營區
+  "台南市柳營區中山西路一段165號": {lat:23.2906,lng:120.3339},
+  // 台南市 - 後壁區
+  "台南市後壁區後壁97-2號":        {lat:23.3617,lng:120.3658},
+  // 台南市 - 東山區
+  "台南市東山區中興南路46號":      {lat:23.2636,lng:120.4219},
+  // 台東縣
+  "台東縣台東市中山路328號":       {lat:22.7556,lng:121.1458},
+  "台東縣台東市平等街11號":        {lat:22.7608,lng:121.1481},
+  "台東縣台東市新生路159號":       {lat:22.7636,lng:121.1503},
+  "台東縣台東市新生路429號":       {lat:22.7653,lng:121.1519},
+  "台東縣台東市更生路1051號":      {lat:22.7522,lng:121.1411},
+  "台東縣台東市漢陽南路89號":      {lat:22.7575,lng:121.1436},
+  "台東縣台東市開封街372號":       {lat:22.7644,lng:121.1536},
+  "台東縣太麻里鄉外環路190號":     {lat:22.6058,lng:121.0358},
+  "台東縣成功鎮大同路29號":        {lat:23.1003,lng:121.3739},
+  "台東縣池上鄉中正路48號":        {lat:23.1111,lng:121.2239},
+  "台東縣關山鎮和平路1號":         {lat:23.0483,lng:121.1681},
+  // 屏東縣（新增）
+  "屏東縣內埔鄉學府路1號":         {lat:22.6203,lng:120.5989},
+  "屏東縣屏東市中正路271號":       {lat:22.6808,lng:120.4939},
+  "屏東縣屏東市民族路84號":        {lat:22.6853,lng:120.4906},
+  "屏東縣東港鎮船頭路3號":         {lat:22.4661,lng:120.4556},
+  "屏東縣恆春鎮復興路100號":       {lat:22.0064,lng:120.7413},
+  "屏東縣崁頂鄉中正路146號":       {lat:22.5132,lng:120.5116},
+  // 高雄市 - 三民區（新增）
+  "高雄市三民區十全三路61號":      {lat:22.6325,lng:120.2989},
+  "高雄市三民區建工路736號":       {lat:22.6428,lng:120.3311},
+  "高雄市三民區明誠一路358號":     {lat:22.6561,lng:120.3150},
+  "高雄市三民區有光路43號":        {lat:22.6406,lng:120.3072},
+  "高雄市三民區自強一路245號":     {lat:22.6492,lng:120.2994},
+  "高雄市三民區自由一路80號":      {lat:22.6500,lng:120.2978},
+  "高雄市三民區鼎力路15號":        {lat:22.6631,lng:120.3222},
+  "高雄市三民區鼎泰街232號":       {lat:22.6506,lng:120.3183},
+  // 高雄市 - 仁武區
+  "高雄市仁武區中華路355號":       {lat:22.6978,lng:120.3528},
+  "高雄市仁武區仁雄路25號":        {lat:22.6967,lng:120.3494},
+  "高雄市仁武區八德中路52號":      {lat:22.6922,lng:120.3556},
+  "高雄市仁武區八德南路475號":     {lat:22.6889,lng:120.3619},
+  "高雄市仁武區水管路三段2號":     {lat:22.7003,lng:120.3472},
+  "高雄市仁武區永仁街352號":       {lat:22.6906,lng:120.3503},
+  "高雄市仁武區霞海路46號":        {lat:22.6944,lng:120.3569},
+  "高雄市仁武區鳳仁路1-52號":      {lat:22.6858,lng:120.3556},
+  // 高雄市 - 前金區
+  "高雄市前金區中華三路171號":     {lat:22.6272,lng:120.3028},
+  // 高雄市 - 前鎮區
+  "高雄市前鎮區和誠街107號":       {lat:22.5969,lng:120.3289},
+  "高雄市前鎮區崗山西街206號":     {lat:22.5933,lng:120.3333},
+  "高雄市前鎮區明鳳三路155號":     {lat:22.5944,lng:120.3244},
+  "高雄市前鎮區忠勤路8號":         {lat:22.6036,lng:120.3030},
+  // 高雄市 - 大寮區
+  "高雄市大寮區大寮路667號":       {lat:22.6014,lng:120.3861},
+  "高雄市大寮區鳳屏一路481號":     {lat:22.6083,lng:120.3914},
+  "高雄市大寮區鳳林三路449號":     {lat:22.6153,lng:120.3939},
+  "高雄市大寮區鳳林四路254號":     {lat:22.6122,lng:120.3917},
+  "高雄市大寮區力行路69號":        {lat:22.6024,lng:120.3986},
+  "高雄市大寮區鳳林路四段419號":   {lat:22.5404,lng:120.4092},
+  // 高雄市 - 大樹區
+  "高雄市大樹區中正一路243號":     {lat:22.6819,lng:120.4211},
+  "高雄市大樹區新鎮路850號":       {lat:22.6867,lng:120.4278},
+  // 高雄市 - 大社區
+  "高雄市大社區中山路347號":       {lat:22.7278,lng:120.3778},
+  "高雄市大社區金龍路338號":       {lat:22.7311,lng:120.3814},
+  // 高雄市 - 小港區
+  "高雄市小港區宏平路152號":       {lat:22.5625,lng:120.3433},
+  "高雄市小港區小港路150-3號":     {lat:22.5711,lng:120.3481},
+  "高雄市小港區山明路112號":       {lat:22.5556,lng:120.3519},
+  "高雄市小港區平和路18號":        {lat:22.5678,lng:120.3503},
+  "高雄市小港區店北路159號":       {lat:22.5692,lng:120.3569},
+  "高雄市小港區康莊路80號":        {lat:22.5644,lng:120.3461},
+  "高雄市小港區松園二路1號":       {lat:22.5600,lng:120.3456},
+  // 高雄市 - 岡山區
+  "高雄市岡山區公園西路三段83號":  {lat:22.7953,lng:120.2950},
+  "高雄市岡山區壽華路131號":       {lat:22.7992,lng:120.3011},
+  "高雄市岡山區大仁北路363號":     {lat:22.8014,lng:120.3050},
+  "高雄市岡山區大仁北路3號":       {lat:22.7961,lng:120.2939},
+  "高雄市岡山區岡燕路338號":       {lat:22.8086,lng:120.3069},
+  "高雄市岡山區平和路15號":        {lat:22.7986,lng:120.2964},
+  "高雄市岡山區民族路46號":        {lat:22.7975,lng:120.2978},
+  // 高雄市 - 左營區
+  "高雄市左營區中華一路9號":       {lat:22.6936,lng:120.3000},
+  "高雄市左營區博愛三路180號":     {lat:22.6908,lng:120.2972},
+  "高雄市左營區富國路71號":        {lat:22.6850,lng:120.3025},
+  "高雄市左營區左營大路272號":     {lat:22.6881,lng:120.2939},
+  "高雄市左營區文學路467號":       {lat:22.6822,lng:120.3072},
+  "高雄市左營區文康路85號":        {lat:22.6872,lng:120.3058},
+  "高雄市左營區榮佑路25號":        {lat:22.6756,lng:120.2994},
+  "高雄市左營區海景街398號":       {lat:22.6731,lng:120.2856},
+  "高雄市左營區華夏路1255號":      {lat:22.6919,lng:120.2878},
+  "高雄市左營區重信路8號":         {lat:22.6917,lng:120.3044},
+  "高雄市左營區重愛路112號":       {lat:22.6931,lng:120.3069},
+  "高雄市左營區高鐵路105號":       {lat:22.6958,lng:120.2831},
+  // 高雄市 - 彌陀區
+  "高雄市彌陀區中正東路501號":     {lat:22.7753,lng:120.2525},
+  // 高雄市 - 新興區
+  "高雄市新興區七賢二路10號":      {lat:22.6300,lng:120.2972},
+  "高雄市新興區中正三路101號":     {lat:22.6317,lng:120.2997},
+  "高雄市新興區復興一路80號":      {lat:22.6308,lng:120.3008},
+  "高雄市新興區復興二路260號":     {lat:22.6281,lng:120.2986},
+  "高雄市新興區林森一路230號":     {lat:22.6292,lng:120.2964},
+  // 高雄市 - 旗山區
+  "高雄市旗山區中華路31號":        {lat:22.8894,lng:120.4831},
+  "高雄市旗山區延平一路453號":     {lat:22.8919,lng:120.4861},
+  "高雄市旗山區旗甲路一段102號":   {lat:22.8933,lng:120.4878},
+  // 高雄市 - 旗津區
+  "高雄市旗津區中洲二路179-11號":  {lat:22.6089,lng:120.2694},
+  // 高雄市 - 林園區
+  "高雄市林園區東林西路394號":     {lat:22.5036,lng:120.3956},
+  "高雄市林園區林園北路495巷1號":  {lat:22.5097,lng:120.3997},
+  "高雄市林園區石化三路351號":     {lat:22.4975,lng:120.3908},
+  "高雄市林園區鳳林路二段37號":    {lat:22.5211,lng:120.4056},
+  // 高雄市 - 梓官區
+  "高雄市梓官區中崙路231號":       {lat:22.7636,lng:120.2758},
+  "高雄市梓官區中正路75號":        {lat:22.7658,lng:120.2778},
+  // 高雄市 - 楠梓區
+  "高雄市楠梓區右昌街543號":       {lat:22.7281,lng:120.3097},
+  "高雄市楠梓區右昌街612號":       {lat:22.7297,lng:120.3111},
+  "高雄市楠梓區土庫三路55號":      {lat:22.7231,lng:120.3283},
+  "高雄市楠梓區德中路326號":       {lat:22.7356,lng:120.3194},
+  "高雄市楠梓區德民路838號":       {lat:22.7361,lng:120.3306},
+  "高雄市楠梓區德賢路479號":       {lat:22.7403,lng:120.3239},
+  "高雄市楠梓區興楠路260號":       {lat:22.7358,lng:120.3131},
+  "高雄市楠梓區興楠路72號":        {lat:22.7339,lng:120.3097},
+  "高雄市楠梓區藍昌路417號":       {lat:22.7303,lng:120.3250},
+  "高雄市楠梓區軍校路800號":       {lat:22.7486,lng:120.3264},
+  // 高雄市 - 橋頭區
+  "高雄市橋頭區成功南路855號":     {lat:22.7522,lng:120.3094},
+  "高雄市橋頭區隆豐路137號":       {lat:22.7561,lng:120.3133},
+  // 高雄市 - 湖內區
+  "高雄市湖內區中山路一段309號":   {lat:22.7758,lng:120.2289},
+  "高雄市湖內區保生路169號":       {lat:22.7800,lng:120.2258},
+  // 高雄市 - 燕巢區
+  "高雄市燕巢區中民路709號":       {lat:22.7947,lng:120.3678},
+  // 高雄市 - 美濃區
+  "高雄市美濃區泰安路172號":       {lat:22.8972,lng:120.5436},
+  // 高雄市 - 苓雅區
+  "高雄市苓雅區中正一路122號":     {lat:22.6217,lng:120.3119},
+  "高雄市苓雅區中正一路374號":     {lat:22.6189,lng:120.3172},
+  "高雄市苓雅區二聖一路58號":      {lat:22.6136,lng:120.3100},
+  "高雄市苓雅區建國一路107號":     {lat:22.6231,lng:120.3289},
+  "高雄市苓雅區林森二路36號":      {lat:22.6161,lng:120.3136},
+  "高雄市苓雅區苓雅一路406號":     {lat:22.6203,lng:120.3311},
+  // 高雄市 - 茄萣區
+  "高雄市茄萣區大仁路167號":       {lat:22.9019,lng:120.1836},
+  "高雄市茄萣區民族路53號":        {lat:22.9033,lng:120.1864},
+  // 高雄市 - 路竹區
+  "高雄市路竹區中正路180號":       {lat:22.8536,lng:120.2567},
+  "高雄市路竹區國昌路26號":        {lat:22.8572,lng:120.2589},
+  "高雄市路竹區金平路369號":       {lat:22.8558,lng:120.2553},
+  // 高雄市 - 阿蓮區
+  "高雄市阿蓮區中正路791號":       {lat:22.8767,lng:120.3031},
+  "高雄市阿蓮區民族路38巷13號":    {lat:22.8781,lng:120.3014},
+  // 高雄市 - 鳥松區
+  "高雄市鳥松區本舘路207號":       {lat:22.6575,lng:120.3831},
+  // 高雄市 - 鳳山區
+  "高雄市鳳山區中山路66號":        {lat:22.6281,lng:120.3558},
+  "高雄市鳳山區五甲二路505號":     {lat:22.5922,lng:120.3703},
+  "高雄市鳳山區五福二路32號":      {lat:22.6258,lng:120.3506},
+  "高雄市鳳山區保南二路207號":     {lat:22.6147,lng:120.3556},
+  "高雄市鳳山區保泰路376號":       {lat:22.6183,lng:120.3592},
+  "高雄市鳳山區保華一路208號":     {lat:22.6167,lng:120.3572},
+  "高雄市鳳山區信義街73號":        {lat:22.6239,lng:120.3544},
+  "高雄市鳳山區光復路107號":       {lat:22.6281,lng:120.3617},
+  "高雄市鳳山區光華路371號":       {lat:22.6250,lng:120.3653},
+  "高雄市鳳山區北昌五街70號":      {lat:22.6297,lng:120.3719},
+  "高雄市鳳山區南和一路47號":      {lat:22.6153,lng:120.3475},
+  "高雄市鳳山區博愛路361號":       {lat:22.6331,lng:120.3681},
+  "高雄市鳳山區國泰路一段2號":     {lat:22.6261,lng:120.3486},
+  "高雄市鳳山區平等路50號":        {lat:22.6267,lng:120.3436},
+  "高雄市鳳山區建國路二段90號":    {lat:22.6203,lng:120.3647},
+  "高雄市鳳山區武營路236號":       {lat:22.6286,lng:120.3736},
+  "高雄市鳳山區海洋一路35號":      {lat:22.6317,lng:120.3653},
+  "高雄市鳳山區瑞隆東路50號":      {lat:22.6228,lng:120.3511},
+  "高雄市鳳山區經武路375號":       {lat:22.6253,lng:120.3569},
+  "高雄市鳳山區誠德街133號":       {lat:22.6228,lng:120.3636},
+  "高雄市鳳山區錦田路189號":       {lat:22.6175,lng:120.3642},
+  "高雄市鳳山區青年路二段261號":   {lat:22.6217,lng:120.3594},
+  "高雄市鳳山區青年路二段421號":   {lat:22.6197,lng:120.3628},
+  "高雄市鳳山區頂庄路88號":        {lat:22.6175,lng:120.3617},
+  "高雄市鳳山區頂豐街21號":        {lat:22.6214,lng:120.3700},
+  "高雄市鳳山區鳳北路117號":       {lat:22.6267,lng:120.3667},
+  // 高雄市 - 鼓山區
+  "高雄市鼓山區南屏路556號":       {lat:22.6439,lng:120.2772},
+  "高雄市鼓山區新疆路91號":        {lat:22.6561,lng:120.2811},
+  "高雄市鼓山區日昌路153號":       {lat:22.6611,lng:120.2825},
+  "高雄市鼓山區明倫路466號":       {lat:22.6567,lng:120.2847},
+  "高雄市鼓山區明誠三路463號":     {lat:22.6606,lng:120.2869},
+  "高雄市鼓山區美明路116號":       {lat:22.6639,lng:120.2836},
+  "高雄市鼓山區美術南三路231號":   {lat:22.6572,lng:120.2786},
+  "高雄市鼓山區華夏路176號":       {lat:22.6542,lng:120.2797},
+  "高雄市鼓山區銘傳路61號":        {lat:22.6581,lng:120.2814},
+  "高雄市鼓山區裕誠路1685號":      {lat:22.6601,lng:120.2946},
+  // 台南摩斯
+  "台南市中西區西門路一段701號": {lat:22.9939, lng:120.2019},
+  "台南市永康區中華路353號":     {lat:22.9989, lng:120.2578},
+  "台南市安平區永華路二段567號": {lat:22.9889, lng:120.1811},
+  "台南市安南區北安路三段159號": {lat:23.0303, lng:120.1942},
+  "台南市中西區成功路21號":       {lat:22.9917, lng:120.2128},
+  "台南市東區東寧路59號":        {lat:22.9972, lng:120.2217},
+  "台南市東區崇學路94號":        {lat:22.9939, lng:120.2283},
+  "台南市南區健康路一段173號":   {lat:22.9736, lng:120.2089},
+  "台南市新營區三民路126號":     {lat:23.3078, lng:120.3128},
+  "台南市歸仁區歸仁大道100號":   {lat:22.9494, lng:120.2928},
 };
 
 const TOWN_COORDS = {
@@ -302,13 +678,40 @@ const TOWN_COORDS = {
   '台中市':{lat:24.1477,lng:120.6736},'彰化縣':{lat:24.0667,lng:120.5167},
   '南投縣':{lat:23.9609,lng:120.9719},'雲林縣':{lat:23.7092,lng:120.4313},
   '嘉義市':{lat:23.4801,lng:120.4491},'嘉義縣':{lat:23.4518,lng:120.2550},
-  '台南市':{lat:22.9999,lng:120.2270},'宜蘭縣':{lat:24.7021,lng:121.7378},
+  '台南市':{lat:22.9999,lng:120.2270},
+  '南區':{lat:22.9761,lng:120.2100},'北區':{lat:23.0103,lng:120.2133},
+  '安平區':{lat:22.9878,lng:120.1803},'安南區':{lat:23.0303,lng:120.1933},
+  '永康區':{lat:23.0333,lng:120.2603},'歸仁區':{lat:22.9706,lng:120.2944},
+  '新化區':{lat:23.0367,lng:120.3139},'新營區':{lat:23.3078,lng:120.3128},
+  '仁德區':{lat:22.9550,lng:120.2511},'關廟區':{lat:22.9886,lng:120.3300},
+  '中西區':{lat:22.9939,lng:120.2039},'東區':{lat:22.9969,lng:120.2250},
+  '南區':{lat:22.9761,lng:120.2100},'北區':{lat:23.0103,lng:120.2133},
+  '安平區':{lat:22.9878,lng:120.1803},'安南區':{lat:23.0303,lng:120.1933},
+  '佳里區':{lat:23.1697,lng:120.1800},'學甲區':{lat:23.2239,lng:120.1981},
+  '西港區':{lat:23.1122,lng:120.2011},'安定區':{lat:23.0800,lng:120.2367},
+  '麻豆區':{lat:23.1808,lng:120.2542},'下營區':{lat:23.2528,lng:120.3156},
+  '六甲區':{lat:23.2286,lng:120.3539},'官田區':{lat:23.2022,lng:120.3139},
+  '柳營區':{lat:23.2906,lng:120.3339},'後壁區':{lat:23.3617,lng:120.3658},
+  '東山區':{lat:23.2636,lng:120.4219},'玉井區':{lat:23.1281,lng:120.4353},
+  '白河區':{lat:23.3528,lng:120.4100},'鹽水區':{lat:23.3156,lng:120.2661},
+  '善化區':{lat:23.1425,lng:120.3020},'新市區':{lat:23.0711,lng:120.2970},
+  // 台東縣各鄉鎮
+  '台東市':{lat:22.7597,lng:121.1444},'太麻里鄉':{lat:22.6058,lng:121.0358},
+  '成功鎮':{lat:23.1003,lng:121.3739},'池上鄉':{lat:23.1111,lng:121.2239},
+  '關山鎮':{lat:23.0483,lng:121.1681},'卑南鄉':{lat:22.7250,lng:121.0792},
+  '大武鄉':{lat:22.3500,lng:120.8667},'長濱鄉':{lat:23.3150,lng:121.4556},
+  '鹿野鄉':{lat:23.0253,lng:121.1589},'延平鄉':{lat:23.0836,lng:121.1028},
+  '海端鄉':{lat:23.1500,lng:121.0167},'金峰鄉':{lat:22.4833,lng:120.9167},
+  '達仁鄉':{lat:22.3833,lng:120.8500},'蘭嶼鄉':{lat:22.0500,lng:121.5500},
+  '綠島鄉':{lat:22.6667,lng:121.4833},
+  '宜蘭縣':{lat:24.7021,lng:121.7378},
   '花蓮縣':{lat:23.9872,lng:121.6015},'台東縣':{lat:22.7972,lng:121.1713},
 };
 
 let stops = [];
 let route = [];
 let currentIdx = 0;
+let deleteMode = false;
 let startCoord = null;
 let leafletMap = null;
 let navLeafletMap = null;
@@ -417,13 +820,21 @@ document.getElementById('fileInput').addEventListener('change', async function(e
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(ws);
   const imported = rows.filter(r => r.Address || r.address).map(r => {
-    const addr = r.Address || r.address || '';
+    const addr = (r.Address || r.address || '').toString().trim();
     const coord = STORE_COORDS[addr] || null;
+    const fLat = parseFloat(r.latitude), fLng = parseFloat(r.longitude);
+    // 帶入 note（異常原因）與 customer phone（門市電話），導航時顯示
+    const noteParts = [];
+    const note = (r.note || r.Note || r['備註'] || '').toString().trim();
+    if (note) noteParts.push(note);
+    const phone = (r['customer phone'] || r.phone || '').toString().trim();
+    if (phone) noteParts.push('☎ ' + phone);
     return {
-      name: r.name || r['customer name'] || addr || '(無名稱)',
+      name: (r.name || r['customer name'] || addr || '(無名稱)').toString().trim(),
       address: addr,
-      lat: coord ? coord.lat : (parseFloat(r.latitude) || null),
-      lng: coord ? coord.lng : (parseFloat(r.longitude) || null),
+      note: noteParts.join('　'),
+      lat: coord ? coord.lat : (Number.isFinite(fLat) ? fLat : null),
+      lng: coord ? coord.lng : (Number.isFinite(fLng) ? fLng : null),
       manual: false
     };
   });
@@ -436,6 +847,7 @@ document.getElementById('fileInput').addEventListener('change', async function(e
 function addManual() {
   const name = document.getElementById('addName').value.trim();
   const addr = document.getElementById('addAddr').value.trim();
+  const note = document.getElementById('addNote').value.trim();
   if (!addr) { alert('請輸入地址'); return; }
 
   const direct = parseLatLng(addr);
@@ -445,6 +857,7 @@ function addManual() {
   stops.push({
     name: name || addr,
     address: addr,
+    note: note,
     lat: coord ? coord.lat : null,
     lng: coord ? coord.lng : null,
     manual: true
@@ -452,12 +865,128 @@ function addManual() {
 
   document.getElementById('addName').value = '';
   document.getElementById('addAddr').value = '';
+  document.getElementById('addNote').value = '';
   renderList();
 }
 document.getElementById('addAddr').addEventListener('keydown', e => { if (e.key==='Enter') addManual(); });
 
 function deleteStop(i) { stops.splice(i,1); renderList(); }
-function clearAll() { stops=[]; route=[]; renderList(); }
+function clearAll() { stops=[]; route=[]; localStorage.removeItem('rp_state_v1'); renderList(); }
+
+// ── 貼上 TG 文字自動解析 ───────────────────────────────────────
+function parsePaste() {
+  const raw = document.getElementById('pasteArea').value;
+  if (!raw.trim()) { alert('請先貼上門市清單'); return; }
+  const addrRe = /((?:台北|臺北|新北|桃園|台中|臺中|台南|臺南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|台東|臺東|澎湖|金門|連江)[縣市][^\s,，、;；|]*?號)/;
+  let added = 0; const skipped = [];
+  raw.split(/\r?\n/).forEach(line => {
+    line = line.trim();
+    if (!line) return;
+    const m = line.match(addrRe);
+    if (!m) {
+      const ll = parseLatLng(line);
+      if (ll) { stops.push({ name: line, address: line, note: '', lat: ll.lat, lng: ll.lng, manual: false }); added++; }
+      else skipped.push(line);
+      return;
+    }
+    const address = m[1];
+    let before = line.slice(0, m.index);
+    let after = line.slice(m.index + m[0].length);
+    // 括號內容（前後皆可）歸到備註
+    let note = '';
+    const pull = s => s.replace(/[（(]([^）)]*)[）)]/g, (_, g) => { const t = g.trim(); if (t) note += (note ? ' ' : '') + t; return ' '; });
+    before = pull(before); after = pull(after);
+    // 地址後面剩下的純文字也當備註（例：未加括號的「異常」）
+    after = after.trim();
+    if (after) note = note ? (note + ' ' + after) : after;
+    // 名稱 = 地址前文字，去掉編號／項目符號、收斂空白
+    const name = before.replace(/^\s*\d+[\.\、\)]\s*/, '').replace(/^[-•·*]\s*/, '').replace(/\s+/g, ' ').trim();
+    note = note.replace(/\s+/g, ' ').trim();
+    const fixed = STORE_COORDS[address] || null;
+    stops.push({ name: name || address, address, note, lat: fixed ? fixed.lat : null, lng: fixed ? fixed.lng : null, manual: false });
+    added++;
+  });
+  document.getElementById('pasteArea').value = '';
+  renderList();
+  let msg = `✅ 已加入 ${added} 個站點`;
+  if (skipped.length) msg += `\n\n⚠️ 這 ${skipped.length} 行找不到地址，已略過：\n` + skipped.slice(0, 6).join('\n') + (skipped.length > 6 ? '\n…' : '');
+  alert(msg);
+}
+
+// ── 一次開啟整條 Google Maps 路線（剩餘站點，含即時路況）──────────
+function openFullRoute() {
+  if (!route.length) { alert('尚未規劃路線'); return; }
+  const remaining = route.slice(currentIdx).filter(p => p.type !== 'start' && !p.skipped);
+  if (!remaining.length) { alert('沒有剩餘站點'); return; }
+  const dest = remaining[remaining.length - 1];
+  let mids = remaining.slice(0, remaining.length - 1);
+  let extra = '';
+  if (mids.length > 9) { extra = '\n\n（Google Maps 單次最多 9 個途經點，已先帶前 9 站，其餘到站後再開一次）'; mids = mids.slice(0, 9); }
+  const enc = p => encodeURIComponent(p.address && p.address.trim() ? p.address.trim() : `${p.lat},${p.lng}`);
+  let url = `https://www.google.com/maps/dir/?api=1&destination=${enc(dest)}&travelmode=driving`;
+  if (mids.length) url += `&waypoints=${mids.map(enc).join('|')}`;
+  if (extra) alert('開啟整條路線' + extra);
+  window.open(url, '_blank');
+}
+
+// ── 一鍵路線連結 encode/decode（給 TG / Hermes 用）──────────────
+function b64urlEncode(str) {
+  return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  try { return decodeURIComponent(escape(atob(str))); } catch (e) { return atob(str); }
+}
+function makeShareLink() {
+  if (!stops.length) { alert('尚無站點可分享'); return; }
+  const arr = stops.map(s => {
+    const o = { name: s.name, address: s.address };
+    if (s.note) o.note = s.note;
+    if (s.lat && s.lng) { o.lat = s.lat; o.lng = s.lng; }
+    return o;
+  });
+  const base = (location.origin && location.origin !== 'null') ? location.origin + location.pathname : location.href.split(/[?#]/)[0];
+  const url = base + '?stops=' + b64urlEncode(JSON.stringify(arr)) + '&auto=1';
+  fallbackCopy(url);
+  alert(`🔗 已複製一鍵路線連結（${stops.length} 站）\n\n貼到 TG 傳給自己，手機點開就會自動排好路線並進入導航。\n\n提醒：連結需放在手機開得到的位置才有效（本機檔案在手機上打不開，建議之後做雲端託管）。`);
+}
+
+// ── 從網址參數載入站點（Hermes 一鍵連結用）─────────────────────
+function loadFromURL() {
+  const p = new URLSearchParams(location.search);
+  const newStops = [];
+  const sp = p.get('stops');
+  if (sp) {
+    try {
+      JSON.parse(b64urlDecode(sp)).forEach(o => {
+        const a = (o.address || '').trim();
+        const n = (o.name || a || '').trim();
+        if (!a && !n) return;
+        const fixed = STORE_COORDS[a] || null;
+        newStops.push({ name: n || a, address: a, note: (o.note || '').trim(),
+          lat: o.lat || (fixed ? fixed.lat : null), lng: o.lng || (fixed ? fixed.lng : null), manual: false });
+      });
+    } catch (e) { console.warn('stops 參數解析失敗', e); }
+  }
+  const ap = p.get('addr');
+  if (ap) ap.split(/[|\n]/).forEach(a => {
+    a = a.trim(); if (!a) return;
+    const fixed = STORE_COORDS[a] || null;
+    newStops.push({ name: a, address: a, note: '', lat: fixed ? fixed.lat : null, lng: fixed ? fixed.lng : null, manual: false });
+  });
+  if (!newStops.length) return false;
+  stops = newStops;
+  const startP = p.get('start');
+  if (startP) {
+    document.getElementById('startInput').value = startP.trim();
+    const ll = parseLatLng(startP.trim());
+    if (ll) startCoord = ll;
+  }
+  renderList();
+  if (p.get('auto') === '1') setTimeout(calcRoute, 500);
+  return true;
+}
 
 function guessCoord(address) {
   for (const [town, coord] of Object.entries(TOWN_COORDS)) {
@@ -512,8 +1041,9 @@ async function geocodeAddress(address) {
     } catch(e) {}
   }
 
-  // 最後備用：鄉鎮市中心估算（固定，不再使用隨機）
-  return guessCoord(address);
+  // 查不到精確座標時回傳 null，交由 calcRoute 標記為「無法定位」讓使用者確認，
+  // 不再靜默掉到鄉鎮中心（會把站點導到錯地方、並汙染路線排序）
+  return null;
 }
 
 function renderList() {
@@ -526,7 +1056,7 @@ function renderList() {
   }
   list.innerHTML = stops.map((s,i) => `<li class="stop-item">
     <div class="snum ${s.manual?'manual':''}">${i+1}</div>
-    <div class="sinfo"><div class="sname">${esc(s.name)}</div><div class="saddr">${esc(s.address)}</div></div>
+    <div class="sinfo"><div class="sname">${esc(s.name)}</div><div class="saddr">${esc(s.address)}</div>${s.note?'<div class="snote">📝 '+esc(s.note)+'</div>':''}</div>
     <button class="del-btn" onclick="deleteStop(${i})">✕</button>
   </li>`).join('');
 
@@ -536,6 +1066,7 @@ function renderList() {
     return { ...c, name: s.name, address: s.address, manual: s.manual };
   });
   setTimeout(() => updateMap(pts), 100);
+  saveState();
 }
 
 function haversine(a, b) {
@@ -653,9 +1184,8 @@ async function calcRoute() {
   }
 
   if (unresolved.length) {
-    finishCalc();
-    alert('以下站點無法定位，請修正後再計算：\n' + unresolved.slice(0, 8).join('\n'));
-    return;
+    const msg = `⚠️ 以下 ${unresolved.length} 個站點無法定位，是否略過並繼續？\n${unresolved.join('\n')}`;
+    if (!confirm(msg)) { finishCalc(); return; }
   }
 
   setProgress(85, '計算最佳順序...');
@@ -687,6 +1217,7 @@ async function calcRoute() {
 
 function startNavigation() {
   currentIdx = 1;
+  deleteMode = false;
   document.getElementById('setupScreen').style.display = 'none';
   document.getElementById('navScreen').style.display = 'block';
   setTimeout(() => {
@@ -699,17 +1230,26 @@ function updateNavUI() {
   const total = route.length - 1;
   const cur = route[currentIdx];
   const prev = route[currentIdx - 1];
+  const isLast = currentIdx === route.length - 1;
 
   document.getElementById('navFraction').textContent = `${currentIdx} / ${total}`;
   document.getElementById('navTopSub').textContent = `${currentIdx}/${total} 站`;
   document.getElementById('navBar').style.width = (currentIdx/total*100)+'%';
   document.getElementById('navCurName').textContent = cur.name;
   document.getElementById('navCurAddr').textContent = cur.address;
+
   const d = haversine(prev, cur);
-  document.getElementById('navCurDist').textContent = `距上站約 ${d<1?(d*1000).toFixed(0)+' m':d.toFixed(1)+' km'}`;
+  let remDist = 0;
+  for (let i = currentIdx; i < route.length - 1; i++) remDist += haversine(route[i], route[i+1]);
+  const fmt = v => v < 1 ? (v*1000).toFixed(0)+' m' : v.toFixed(1)+' km';
+  document.getElementById('navCurDist').textContent = `距上站約 ${fmt(d)}　剩餘 ${fmt(remDist)}`;
+
+  const noteEl = document.getElementById('navCurNote');
+  if (cur.note) { noteEl.textContent = '📝 ' + cur.note; noteEl.style.display = 'block'; }
+  else { noteEl.style.display = 'none'; }
 
   const next = route[currentIdx+1];
-  if (next) {
+  if (next && !isLast) {
     document.getElementById('navNextName').textContent = next.name;
     document.getElementById('navNextName').style.color = '';
     document.getElementById('navNextAddr').textContent = next.address;
@@ -719,35 +1259,106 @@ function updateNavUI() {
     document.getElementById('navNextAddr').textContent = '';
   }
 
+  document.querySelector('.btn-nav-done').textContent = isLast ? '🏁 完成導航' : '✅ 已到達，前往下一站';
+
   document.getElementById('routePreview').innerHTML = route.map((p,i) => {
     if (i===0) return '';
     const done = i < currentIdx, isCur = i===currentIdx;
-    return `<li class="rp-item ${done?'done':isCur?'current':''}">
+    const isEnd = i === route.length - 1;
+    let cls = isCur ? 'current' : (done ? 'done' : '');
+    if (p.skipped) cls += ' skipped';
+    const canDel = deleteMode && !isCur && !isEnd && i > currentIdx;
+    return `<li class="rp-item ${cls}" onclick="${canDel ? '' : `jumpToStop(${i})`}">
       <div class="rp-num ${done?'done-num':isCur?'cur-num':''}">${i}</div>
       <div style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
+      ${canDel ? `<button onclick="event.stopPropagation();deleteRouteStop(${i})" style="flex-shrink:0;margin-left:6px;border:none;background:#ef4444;color:#fff;border-radius:6px;padding:3px 10px;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
     </li>`;
   }).join('');
 
+  const curItem = document.querySelector('#routePreview .rp-item.current');
+  if (curItem) curItem.scrollIntoView({ behavior:'smooth', block:'nearest' });
+
   updateNavMap();
   window.scrollTo(0,0);
+  saveState();
 }
 
 function goNavigate() {
   const cur = route[currentIdx];
-  const destination = buildDestination(cur);
-  if (!destination) { alert('此站點缺少可導航資訊'); return; }
-  window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`, '_blank');
+  const dest = cur.address || `${cur.lat},${cur.lng}`;
+  if (!dest || dest === ',') { alert('此站點缺少可導航資訊'); return; }
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&travelmode=driving`;
+  window.open(url, '_blank');
+}
+
+async function shareStop() {
+  const cur = route[currentIdx];
+  const dest = cur.address || `${cur.lat},${cur.lng}`;
+  if (!dest || dest === ',') { alert('此站點缺少可分享資訊'); return; }
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&travelmode=driving`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: cur.name, text: `${cur.name}\n${cur.address}`, url: mapsUrl });
+    } catch(e) {
+      if (e.name !== 'AbortError') fallbackCopy(dest);
+    }
+  } else {
+    fallbackCopy(dest);
+    alert('已複製地址到剪貼簿');
+  }
+}
+
+function fallbackCopy(text) {
+  if (navigator.clipboard) { navigator.clipboard.writeText(text); return; }
+  const el = document.createElement('textarea');
+  el.value = text; document.body.appendChild(el); el.select();
+  document.execCommand('copy'); document.body.removeChild(el);
 }
 
 function nextStop() {
   currentIdx++;
-  if (currentIdx >= route.length) { alert('🎉 所有站點已完成！'); exitNav(); return; }
+  if (currentIdx >= route.length) {
+    const skipped = route.filter(p => p.skipped).length;
+    alert(skipped > 0
+      ? `🎉 導航完成！共 ${route.length-2} 站，跳過 ${skipped} 站。`
+      : `🎉 所有 ${route.length-2} 站導航完成！`);
+    exitNav();
+    return;
+  }
   updateNavUI();
 }
 
-function skipStop() { nextStop(); }
+function skipStop() {
+  route[currentIdx].skipped = true;
+  nextStop();
+}
+
+function jumpToStop(i) {
+  if (i < 1 || i >= route.length) return;
+  currentIdx = i;
+  updateNavUI();
+}
+
+function toggleDeleteMode() {
+  deleteMode = !deleteMode;
+  const btn = document.getElementById('deleteModeBtn');
+  btn.style.background = deleteMode ? '#ef4444' : '#fff';
+  btn.style.color = deleteMode ? '#fff' : '#ef4444';
+  btn.textContent = deleteMode ? '完成' : '✕ 刪除站點';
+  updateNavUI();
+}
+
+function deleteRouteStop(i) {
+  if (i <= currentIdx || i >= route.length - 1) return;
+  const removed = route.splice(i, 1)[0];
+  // 同步從 stops 移除（依名稱+地址比對）
+  const si = stops.findIndex(s => s.name === removed.name && s.address === removed.address);
+  if (si !== -1) stops.splice(si, 1);
+  updateNavUI();
+}
 
 function exitNav() {
+  deleteMode = false;
   document.getElementById('navScreen').style.display = 'none';
   document.getElementById('setupScreen').style.display = 'block';
   window.scrollTo(0,0);
@@ -756,10 +1367,59 @@ function exitNav() {
     return { ...c, name: s.name, address: s.address, manual: s.manual };
   });
   setTimeout(() => { if(leafletMap) updateMap(pts); }, 100);
+  saveState();
 }
 
-// 頁面載入時初始化地圖
-window.addEventListener('load', () => { setTimeout(initMap, 200); });
+// ── localStorage 狀態保存 ──────────────────────────────────────
+const RP_KEY = 'rp_state_v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(RP_KEY, JSON.stringify({
+      stops, route, currentIdx,
+      screen: document.getElementById('navScreen').style.display !== 'none' ? 'nav' : 'setup',
+      ts: Date.now()
+    }));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(RP_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    // 超過 24 小時自動拋棄
+    if (Date.now() - s.ts > 86400000) { localStorage.removeItem(RP_KEY); return null; }
+    return s;
+  } catch(e) { return null; }
+}
+
+// 頁面載入時初始化地圖，並嘗試恢復上次狀態
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (loadFromURL()) { initMap(); return; }
+    const s = loadState();
+    if (s && s.stops && s.stops.length) {
+      stops = s.stops;
+      route = s.route || [];
+      currentIdx = s.currentIdx || 1;
+      if (s.screen === 'nav' && route.length > 1) {
+        // 恢復導航畫面
+        document.getElementById('setupScreen').style.display = 'none';
+        document.getElementById('navScreen').style.display = 'block';
+        initNavMap();
+        updateNavUI();
+        // 頂部顯示恢復提示
+        const sub = document.getElementById('navTopSub');
+        sub.textContent += '　（已恢復）';
+      } else {
+        // 恢復站點清單
+        renderList();
+      }
+    }
+    initMap();
+  }, 200);
+});
 </script>
 </body>
 </html>
