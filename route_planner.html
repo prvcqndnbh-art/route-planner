@@ -425,6 +425,7 @@ const STORE_COORDS = {
   // 台南市 - 新市區
   "台南市新市區中正路63號":        {lat:23.0711,lng:120.2961},
   "台南市新市區復興路213號":       {lat:23.0717,lng:120.2978},
+  "台南市新市區南科三路17號":      {lat:23.0984,lng:120.2821},
   // 台南市 - 新營區
   "台南市新營區三民路18號":        {lat:23.3083,lng:120.3136},
   "台南市新營區復興路150-3號":     {lat:23.3092,lng:120.3153},
@@ -721,10 +722,11 @@ let mapPolyline = null;
 // 初始化設定地圖
 function initMap() {
   if (leafletMap) return;
-  leafletMap = L.map('map', { zoomControl: true, attributionControl: false })
+  leafletMap = L.map('map', { zoomControl: true, attributionControl: true })
     .setView([22.55, 120.52], 10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 18,
+    attribution: '&copy; Esri &mdash; Source: Esri, HERE, Garmin, USGS, NGA, EPA, USDA'
   }).addTo(leafletMap);
 }
 
@@ -760,10 +762,11 @@ function updateMap(pts) {
 // 導航地圖
 function initNavMap() {
   if (navLeafletMap) return;
-  navLeafletMap = L.map('navMap', { zoomControl: true, attributionControl: false })
+  navLeafletMap = L.map('navMap', { zoomControl: true, attributionControl: true })
     .setView([22.55, 120.52], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 18,
+    attribution: '&copy; Esri &mdash; Source: Esri, HERE, Garmin, USGS, NGA, EPA, USDA'
   }).addTo(navLeafletMap);
 }
 
@@ -812,35 +815,75 @@ function getGPS() {
 }
 
 // Excel 匯入
+// Excel 檔案若整列/整欄被套過格式，宣告範圍（!ref）可能膨脹到 A1:XFA1048576，
+// 若直接交給 sheet_to_json 會依宣告範圍逐格掃描，等於跑上百億次迴圈導致瀏覽器卡死。
+// 這裡改成只依實際有值的儲存格重算範圍，避免匯入卡住（尤其手機更容易當掉）。
+function shrinkSheetRange(ws) {
+  let maxR = -1, maxC = -1;
+  for (const key in ws) {
+    if (key[0] === '!') continue;
+    const cell = ws[key];
+    if (cell == null || cell.v === undefined || cell.v === null || cell.v === '') continue;
+    const addr = XLSX.utils.decode_cell(key);
+    if (addr.r > maxR) maxR = addr.r;
+    if (addr.c > maxC) maxC = addr.c;
+  }
+  if (maxR >= 0 && maxC >= 0) {
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxR, c: maxC } });
+  }
+}
+
 document.getElementById('fileInput').addEventListener('change', async function(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const data = await file.arrayBuffer();
-  const wb = XLSX.read(data);
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws);
-  const imported = rows.filter(r => r.Address || r.address).map(r => {
-    const addr = (r.Address || r.address || '').toString().trim();
-    const coord = STORE_COORDS[addr] || null;
-    const fLat = parseFloat(r.latitude), fLng = parseFloat(r.longitude);
-    // 帶入 note（異常原因）與 customer phone（門市電話），導航時顯示
-    const noteParts = [];
-    const note = (r.note || r.Note || r['備註'] || '').toString().trim();
-    if (note) noteParts.push(note);
-    const phone = (r['customer phone'] || r.phone || '').toString().trim();
-    if (phone) noteParts.push('☎ ' + phone);
-    return {
-      name: (r.name || r['customer name'] || addr || '(無名稱)').toString().trim(),
-      address: addr,
-      note: noteParts.join('　'),
-      lat: coord ? coord.lat : (Number.isFinite(fLat) ? fLat : null),
-      lng: coord ? coord.lng : (Number.isFinite(fLng) ? fLng : null),
-      manual: false
-    };
-  });
-  stops = [...imported, ...stops.filter(s => s.manual)];
-  renderList();
-  e.target.value = '';
+  try {
+    if (typeof XLSX === 'undefined') {
+      alert('⚠️ 匯入失敗：Excel 讀取元件（XLSX）沒有載入成功。\n\n通常是網路問題或防護軟體擋住了 cdnjs.cloudflare.com，請檢查網路連線或防毒/防火牆設定後再試一次。');
+      e.target.value = '';
+      return;
+    }
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data);
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    shrinkSheetRange(ws);
+    const rows = XLSX.utils.sheet_to_json(ws);
+    if (!rows.length) {
+      alert('⚠️ 匯入失敗：「' + file.name + '」這個 Excel 檔案讀不到任何資料列。\n\n請確認檔案第一個工作表（sheet）裡有資料，且第一列是欄位標題。');
+      e.target.value = '';
+      return;
+    }
+    const imported = rows.filter(r => r.Address || r.address).map(r => {
+      const addr = (r.Address || r.address || '').toString().trim();
+      const coord = STORE_COORDS[addr] || null;
+      const fLat = parseFloat(r.latitude), fLng = parseFloat(r.longitude);
+      // 帶入 note（異常原因）與 customer phone（門市電話），導航時顯示
+      const noteParts = [];
+      const note = (r.note || r.Note || r['備註'] || '').toString().trim();
+      if (note) noteParts.push(note);
+      const phone = (r['customer phone'] || r.phone || '').toString().trim();
+      if (phone) noteParts.push('☎ ' + phone);
+      return {
+        name: (r.name || r['customer name'] || addr || '(無名稱)').toString().trim(),
+        address: addr,
+        note: noteParts.join('　'),
+        lat: coord ? coord.lat : (Number.isFinite(fLat) ? fLat : null),
+        lng: coord ? coord.lng : (Number.isFinite(fLng) ? fLng : null),
+        manual: false
+      };
+    });
+    if (!imported.length) {
+      const actualCols = Object.keys(rows[0]).join('、');
+      alert('⚠️ 匯入失敗：讀到 ' + rows.length + ' 列資料，但沒有一列有 Address 欄位。\n\n偵測到的實際欄位名稱是：\n' + actualCols + '\n\n請確認欄位名稱是不是「Address」（大小寫、拼字要完全一致）。');
+      e.target.value = '';
+      return;
+    }
+    stops = [...imported, ...stops.filter(s => s.manual)];
+    renderList();
+    e.target.value = '';
+  } catch (err) {
+    alert('⚠️ 匯入時發生錯誤：\n\n' + err.message + '\n\n請把這段文字截圖給 Claude。');
+    e.target.value = '';
+  }
 });
 
 // 手動新增
