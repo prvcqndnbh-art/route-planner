@@ -1069,10 +1069,15 @@ async function geocodeAddress(address) {
   if (direct) return direct;
 
   // 用 Nominatim 查詢（多組 query 以提升台灣地址命中率）
+  // OSM 在台灣多半沒有門牌號碼資料，整串地址常查不到；
+  // 最後退到「去掉門牌（巷弄號樓）」的路段層級，至少能定位到該條路
+  const trimmed = address.trim();
+  const noNumber = trimmed.replace(/[\d０-９]+(之[\d０-９]+)?號.*$/, '').replace(/[\d０-９]+巷.*$/, '').trim();
   const queries = Array.from(new Set([
-    address.trim(),
+    trimmed,
     address.replace(/[（）()]/g, ' ').replace(/\s+/g, ' ').trim(),
-    `台灣 ${address.trim()}`
+    `台灣 ${trimmed}`,
+    noNumber
   ].filter(Boolean)));
 
   for (const q of queries) {
